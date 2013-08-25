@@ -60,7 +60,7 @@ var AmApi = {};
             thumb_li.append(thumb_parent, $("<a class=\"bg\">&nbsp;</a>"));
 
             var zoom_icon = $("<div class=\"ThumbsViewer_zoom-ico\"><img src=\"graphics/Zoom-In-icon.png\" /></div>");
-            zoom_icon.data('ThumbsViewer', {img_src: img.photo_604});
+            zoom_icon.data('ThumbsViewer', {img_src: img.photo_320});
             thumb_parent.append(zoom_icon);
 
             var thumb_img = $("<img />");
@@ -283,7 +283,7 @@ var AmApi = {};
             $this = $(this);
             var data   = $this.data('ThumbsViewer');
             event.stopPropagation();
-            return hs.expand( $("<a></a>", {href: data.img_src}).get(0) );
+            return hs.expand( $("<a></a>", {href: data.img_src}).get(0), { captionText: 'This is the caption text' } );
         }
     };
 
@@ -522,11 +522,20 @@ var VkApiWrapper = {
         return d.promise();
     },
 
-    queryAlbumsList: function(ownerId) {
+    queryVideoAlbumsList: function(ownerId) {
+        var self = this;
+        var p = this.callVkApi("video.getAlbums", {owner_id: ownerId, count: 100});
+        p.fail(function(){
+            self.displayError("Не удалось получить список альбомов видеозаписей! Попробуйте перезагрузить приложение.");
+        });
+        return p;
+    },
+
+    queryPhotoAlbumsList: function(ownerId) {
         var self = this;
         var p = this.callVkApi("photos.getAlbums", {owner_id: ownerId});
         p.fail(function(){
-            self.displayError("Не удалось получить список альбомов! Попробуйте перезагрузить приложение.");
+            self.displayError("Не удалось получить список фотоальбомов! Попробуйте перезагрузить приложение.");
         });
         return p;
     },
@@ -536,6 +545,15 @@ var VkApiWrapper = {
         var p = this.callVkApi("photos.get", {owner_id: ownerId, album_id: albumId});
         p.fail(function(){
             self.displayError("Не удалось получить список фотографий из выбранного альбома! Попробуйте перезагрузить приложение.");
+        });
+        return p;
+    },
+
+    queryVideosList: function(ownerId, albumId) {
+        var self = this;
+        var p = this.callVkApi("video.get", {owner_id: ownerId, album_id: albumId, width: 320, count: 200});
+        p.fail(function(){
+            self.displayError("Не удалось получить список видеозаписей из выбранного альбома! Попробуйте перезагрузить приложение.");
         });
         return p;
     },
@@ -607,12 +625,12 @@ var AmApi__ = {
         }
 
         showSpinner();
-        VkApiWrapper.queryPhotosList(ownerId, self.srcAlbumList.item(selIndex).value).done(
-            function(photosList){
-                self.srcPhotosNumEdit.value = photosList.items.length;
+        VkApiWrapper.queryVideosList(ownerId, self.srcAlbumList.item(selIndex).value).done(
+            function(videosList){
+                self.srcPhotosNumEdit.value = videosList.items.length;
 
                 self.revThumbSortChk.disabled = true;
-                $("#thumbs_container").ThumbsViewer("addThumbList", photosList.items, self.revThumbSortChk.checked).done(
+                $("#thumbs_container").ThumbsViewer("addThumbList", videosList.items, self.revThumbSortChk.checked).done(
                     function(){self.revThumbSortChk.disabled = false;}
                 );
 
@@ -629,11 +647,6 @@ var AmApi__ = {
         var ownSelIndex = self.dstAlbumOwnerList.selectedIndex;
         var ownerId = self.dstAlbumOwnerList.item(ownSelIndex).value;
 
-        if(selIndex == 1){//save album
-            $("#movePhotosBtn").button("option","label", "Сохранить");
-            self.dstPhotosNumEdit.value = "";
-            return;
-        }
         $("#movePhotosBtn").button("option","label","Переместить");
         if(selIndex == 0){//not selected
             self.dstPhotosNumEdit.value = "";
@@ -642,9 +655,9 @@ var AmApi__ = {
 
         showSpinner();
 
-        VkApiWrapper.queryPhotosList(ownerId, self.dstAlbumList.item(selIndex).value).done(
-            function(photosList){
-                self.dstPhotosNumEdit.value = photosList.items.length;
+        VkApiWrapper.queryVideosList(ownerId, self.dstAlbumList.item(selIndex).value).done(
+            function(videosList){
+                self.dstPhotosNumEdit.value = videosList.items.length;
                 hideSpinner();
             }
         );
@@ -708,7 +721,7 @@ var AmApi__ = {
     },
 
     movePhotosSingle: function(aid_target, selThumbsAr){
-        var self = this;
+        /*var self = this;
 
         if(!selThumbsAr.length){
             //MOVE DONE
@@ -746,7 +759,7 @@ var AmApi__ = {
                     self.movePhotosSingle(aid_target, selThumbsAr);
                 }, Settings.movePhotosDelay);
             }
-        );
+        );       */
     },
 
     revThumbSortChkClick: function(){
@@ -755,7 +768,7 @@ var AmApi__ = {
     },
 
     savePhotos: function(divPhotos, selThumbsAr, num){
-        var self = this;
+        /*var self = this;
 
         if(!selThumbsAr.length){
             return;
@@ -794,11 +807,11 @@ var AmApi__ = {
         //divPhotos.innerHTML = divPhotos.innerHTML + htmlStr;
         $(divPhotos).append(htmlStr);
         $(currThumbData.$thumb).removeClass("selected");
-        setTimeout(function(){self.savePhotos(divPhotos, selThumbsAr, num+1)}, Settings.savePhotosDelay);
+        setTimeout(function(){self.savePhotos(divPhotos, selThumbsAr, num+1)}, Settings.savePhotosDelay);*/
     },
 
     movePhotosClick: function() {
-        var self = this;
+        /*var self = this;
         var dstSelIndex = self.dstAlbumList.selectedIndex;
         if(!dstSelIndex){//dst album not selected
             displayWarn("Не выбран альбом, куда перемещать фотографии", "NoteField", Settings.errorHideAfter);
@@ -841,7 +854,7 @@ var AmApi__ = {
         self.progressStep = 100.0/(selThumbsAr.length);
         self.progressPerc = 0.0;
 
-        self.movePhotosSingle(self.dstAlbumList.item(dstSelIndex).value, selThumbsAr);
+        self.movePhotosSingle(self.dstAlbumList.item(dstSelIndex).value, selThumbsAr); */
     },
 
     fillSrcAlbumsListBox: function(albums, selfOwn){
@@ -853,20 +866,9 @@ var AmApi__ = {
             self.srcAlbumList.remove(i);
         }
 
-        //my albums, add service albums
-        if(selfOwn){
-            var opt1 = new Option("Сохраненные фотографии", -15, false, false);
-            $(opt1).addClass("italic_bold");
-            self.srcAlbumList.add(opt1, null);
-
-            var opt2 = new Option("Фото на моей стене", -7, false, false);
-            $(opt2).addClass("italic_bold");
-            self.srcAlbumList.add(opt2, null);
-        }
-
         for(var i = 0; i < albums.length; i++){
             var title = $("<div>").html(albums[i].title).text();//to convert escape sequences (&amp;, &quot;...) to chars
-            var opt = new Option(title, albums[i].id, false, false);
+            var opt = new Option(title, albums[i].album_id, false, false);
             self.srcAlbumList.add(opt, null);
         }
     },
@@ -876,15 +878,15 @@ var AmApi__ = {
         self.dstAlbumList.selectedIndex = 0;
 
         //remove old options
-        //i >= 2 to skip "not selected" and "save locally" options
-        for(var i = self.dstAlbumList.length-1; i >= 2; --i){
+        //i >= 1 to skip "not selected"  option
+        for(var i = self.dstAlbumList.length-1; i >= 1; --i){
             self.dstAlbumList.remove(i);
         }
 
         //add new options
         for(var i = 0; i < albums.length; i++){
             var title = $("<div>").html(albums[i].title).text();//to convert escape sequences (&amp;, &quot;...) to chars
-            var opt = new Option(title, albums[i].id, false, false);
+            var opt = new Option(title, albums[i].album_id, false, false);
             self.dstAlbumList.add(opt, null);
         }
     },
@@ -919,7 +921,7 @@ var AmApi__ = {
         var self = this;
         showSpinner();
 
-        VkApiWrapper.queryAlbumsList(ownerId).done(function(albums){
+        VkApiWrapper.queryVideoAlbumsList(ownerId).done(function(albums){
             //sort albums by name
             albums.items = albums.items.sort(function(a, b){
                 if(a.title < b.title){
