@@ -22,7 +22,7 @@
 	</a>
 	</div>
 	<div style="width: 100%; text-align: center; margin-left: auto; margin-right: auto;">
-		<h2 class="TopHead">Перенос видео между альбомами</h2>
+		<h2 class="TopHead">Перенос видео между альбомами <span style="color: red">alpha</span></h2>
 		<hr width="100%" />
 
 		<div id="welcome_dialog" title="Добро Пожаловать!" style="display: none;">
@@ -45,6 +45,7 @@
 				</select><br />
                 <select class="ui-corner-tl ui-corner-bl ui-widget ui-widget-content no_glow_on_focus" name="SrcAlbumList" size="1" id="Form1_SrcAlbumList"  onchange="AmApi.srcAlbumChanged()">
                     <option value="not selected">Альбом не выбран</option>
+                    <option value="" class="italic_bold">Все видеозаписи</option>
                 </select>
 				<br /><br />
 				<label for="Form1_SrcPhotosNum"><strong>Изображений в альбоме:</strong></label>
@@ -67,7 +68,7 @@
 		</div>
 		
 		<div style="width: 100%;" class="clear_fix">
-			<div style="float: left;"><button id="movePhotosBtn" disabled=1 type="button" onclick="AmApi.movePhotosClick();">Переместить</button></div>
+			<div style="float: left;"><button id="movePhotosBtn" disabled=1 type="button" onclick="AmApi.moveVideosClick();">Переместить</button></div>
 			<div style="overflow: hidden;"><div id="Progressbar"></div></div>
 		</div>
 		<div id="NoteField"></div>

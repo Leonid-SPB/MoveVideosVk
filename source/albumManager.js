@@ -504,6 +504,7 @@ var VkApiWrapper = {
     //allowed: 3 requests in 1000 ms
     apiMaxCallsCount  : 3,
     apiMaxCallsPeriod : 1000,
+    errorCodeAccessDenied: 204,//VK api error code for "Access denied"
 
     rateLimiter       : null,
 
@@ -527,7 +528,7 @@ var VkApiWrapper = {
                     d.resolve(data.response);
                 }else{
                     console.log(data.error.error_msg);
-                    d.reject();
+                    d.reject(data.error);
                 }
             });
         });
@@ -538,8 +539,13 @@ var VkApiWrapper = {
     queryVideoAlbumsList: function(ownerId) {
         var self = this;
         var p = this.callVkApi("video.getAlbums", {owner_id: ownerId, count: 100});
-        p.fail(function(){
-            self.displayError("Не удалось получить список альбомов видеозаписей! Попробуйте перезагрузить приложение.");
+        p.fail(function(error){
+            //don't display error message if access denied error
+            if(error.error_code != self.errorCodeAccessDenied){
+                self.displayError("Не удалось получить список альбомов видеозаписей! Попробуйте перезагрузить приложение.");
+            }
+
+            //TODO: add some warning in such case when error is not fatal
         });
         return p;
     },
@@ -562,9 +568,9 @@ var VkApiWrapper = {
         return p;
     },
 
-    queryVideosList: function(ownerId, albumId) {
+    queryVideosList: function(ownerId, albumId, offset) {
         var self = this;
-        var p = this.callVkApi("video.get", {owner_id: ownerId, album_id: albumId, width: 320, count: 200});
+        var p = this.callVkApi("video.get", {owner_id: ownerId, album_id: albumId, width: 320, count: 200, offset: offset});
         p.fail(function(){
             self.displayError("Не удалось получить список видеозаписей из выбранного альбома! Попробуйте перезагрузить приложение.");
         });
@@ -585,6 +591,15 @@ var VkApiWrapper = {
         var p = this.callVkApi("photos.move", {owner_id: ownerId, target_album_id: targetAlbumId, photo_id: photoId});
         p.fail(function(){
             self.displayError("Не удалось переместить фотографию! Попробуйте перезагрузить приложение.");
+        });
+        return p;
+    },
+
+    moveVideo: function(ownerGrpId, targetAlbumId, videoIds){
+        var self = this;
+        var p = this.callVkApi("video.moveToAlbum", {group_id: ownerGrpId, album_id: targetAlbumId, video_ids: videoIds});
+        p.fail(function(){
+            self.displayError("Не удалось переместить видеозапись! Попробуйте перезагрузить приложение.");
         });
         return p;
     },
@@ -637,18 +652,16 @@ var AmApi__ = {
             return;
         }
 
-        showSpinner();
-        VkApiWrapper.queryVideosList(ownerId, self.srcAlbumList.item(selIndex).value).done(
+        self.queryAllVideos(ownerId, self.srcAlbumList.item(selIndex).value).then(
             function(videosList){
-                self.srcPhotosNumEdit.value = videosList.items.length;
+                self.srcPhotosNumEdit.value = videosList.length;
 
                 self.revThumbSortChk.disabled = true;
-                $("#thumbs_container").ThumbsViewer("addThumbList", videosList.items, self.revThumbSortChk.checked).done(
+                $("#thumbs_container").ThumbsViewer("addThumbList", videosList, self.revThumbSortChk.checked).done(
                     function(){self.revThumbSortChk.disabled = false;}
                 );
 
                 self.updSelectedNum();
-                hideSpinner();
             }
         );
     },
@@ -666,12 +679,9 @@ var AmApi__ = {
             return;
         }
 
-        showSpinner();
-
-        VkApiWrapper.queryVideosList(ownerId, self.dstAlbumList.item(selIndex).value).done(
+        self.queryAllVideos(ownerId, self.dstAlbumList.item(selIndex).value).then(
             function(videosList){
-                self.dstPhotosNumEdit.value = videosList.items.length;
-                hideSpinner();
+                self.dstPhotosNumEdit.value = videosList.length;
             }
         );
     },
@@ -733,8 +743,8 @@ var AmApi__ = {
         //self.dstAlbumOwnerList.disabled = dval;
     },
 
-    movePhotosSingle: function(aid_target, selThumbsAr){
-        /*var self = this;
+    moveVideosSingle: function(aid_target, selThumbsAr){
+        var self = this;
 
         if(!selThumbsAr.length){
             //MOVE DONE
@@ -757,9 +767,12 @@ var AmApi__ = {
         var currThumbData = selThumbsAr.shift();
 
         var ownSelIndex = self.srcAlbumOwnerList.selectedIndex;
-        var ownerId = self.srcAlbumOwnerList.item(ownSelIndex).value;
+        var ownerId = "";
+        if(ownSelIndex > 0){//set ownerId only if Owner is group
+            ownerId = self.srcAlbumOwnerList.item(ownSelIndex).value;
+        }
 
-        VkApiWrapper.movePhoto(ownerId, aid_target, currThumbData.img.id).done(
+        VkApiWrapper.moveVideo(ownerId, aid_target, currThumbData.img.id).done(
             function() {
                 ++self.dstPhotosNumEdit.value;
                 --self.srcPhotosNumEdit.value;
@@ -769,10 +782,10 @@ var AmApi__ = {
                 self.progressPerc = self.progressPerc + self.progressStep;
                 $("#Progressbar").progressbar("value", self.progressPerc);
                 setTimeout(function(){
-                    self.movePhotosSingle(aid_target, selThumbsAr);
+                    self.moveVideosSingle(aid_target, selThumbsAr);
                 }, Settings.movePhotosDelay);
             }
-        );       */
+        );
     },
 
     revThumbSortChkClick: function(){
@@ -780,84 +793,23 @@ var AmApi__ = {
         $("#thumbs_container").ThumbsViewer("sort", self.revThumbSortChk.checked);
     },
 
-    savePhotos: function(divPhotos, selThumbsAr, num){
-        /*var self = this;
-
-        if(!selThumbsAr.length){
-            return;
-        }
-
-        var currThumbData = selThumbsAr.shift();
-        var src = currThumbData.img.photo_130;
-
-        if(currThumbData.img.photo_2560){
-            src = currThumbData.img.photo_2560;
-        }else if(currThumbData.img.photo_1280){
-            src = currThumbData.img.photo_1280;
-        }else if(currThumbData.img.photo_807){
-            src = currThumbData.img.photo_807;
-        }else if(currThumbData.img.photo_604){
-            src = currThumbData.img.photo_604;
-        }
-
-        function lzn(num){
-            return (num < 10)? "0" + num: "" + num;
-        }
-
-        var cD = new Date(currThumbData.img.date*1000);
-        var createdStr = lzn(cD.getDay()) + "." + lzn(cD.getMonth()) + "." + cD.getFullYear() + " " + lzn(cD.getHours()) + ":" + lzn(cD.getMinutes()) + ":" + lzn(cD.getSeconds());
-        var text = currThumbData.img.text ? $("<div>").text(currThumbData.img.text).html() : "";
-
-        var htmlStr = "";
-        htmlStr = htmlStr + "<p> Фото №" + num + ", " + createdStr;
-        if(text.length){
-            htmlStr = htmlStr + ", " + text + "</p>";
-        }else{
-            htmlStr = htmlStr + "</p>";
-        }
-        htmlStr = htmlStr + "<img src=\"" + src + "\" alt=\"" + text + "\"/ ><br/ ><br/ >";
-
-        //divPhotos.innerHTML = divPhotos.innerHTML + htmlStr;
-        $(divPhotos).append(htmlStr);
-        $(currThumbData.$thumb).removeClass("selected");
-        setTimeout(function(){self.savePhotos(divPhotos, selThumbsAr, num+1)}, Settings.savePhotosDelay);*/
-    },
-
-    movePhotosClick: function() {
-        /*var self = this;
+    moveVideosClick: function() {
+        var self = this;
         var dstSelIndex = self.dstAlbumList.selectedIndex;
         if(!dstSelIndex){//dst album not selected
-            displayWarn("Не выбран альбом, куда перемещать фотографии", "NoteField", Settings.errorHideAfter);
+            displayWarn("Не выбран альбом, куда перемещать видеозаписи", "NoteField", Settings.errorHideAfter);
             return;
         }
 
         var srcSelIndex = self.srcAlbumList.selectedIndex;
         if(self.dstAlbumList.item(dstSelIndex).value == self.srcAlbumList.item(srcSelIndex).value){
-            displayWarn("Нельзя переместить фотографии в тот же самый альбом!", "NoteField", Settings.errorHideAfter);
+            displayWarn("Нельзя переместить видеозаписи в тот же самый альбом!", "NoteField", Settings.errorHideAfter);
             return;
         }
 
         var selThumbsAr = $("#thumbs_container").ThumbsViewer("getSelThumbsData");
         if(!selThumbsAr.length){//no images selected
-            displayWarn("Не выбраны фотографии для перемещения/сохранения", "NoteField", Settings.errorHideAfter);
-            return;
-        }
-
-        //save to disk
-        if(self.dstAlbumList.item(dstSelIndex).value == "save"){
-            var popUp = window.open("SaveAlbum.html", "_blank", "location=1, menubar=1, toolbar=1, titlebar=1, scrollbars=1",false);
-            var title = "Фотографии из альбома \"" + self.srcAlbumList.item(srcSelIndex).text + "\"";
-            var divPhotos = null;
-            function waitLoad(){
-                divPhotos = popUp.document.getElementById("photos");
-                if(divPhotos){
-                    popUp.document.title = title;
-                    self.savePhotos(divPhotos, selThumbsAr, 1);
-                } else {
-                    setTimeout(waitLoad, 100);
-                }
-            }
-            setTimeout(waitLoad, 100);
+            displayWarn("Не выбраны видеозаписи для перемещения/сохранения", "NoteField", Settings.errorHideAfter);
             return;
         }
 
@@ -867,15 +819,15 @@ var AmApi__ = {
         self.progressStep = 100.0/(selThumbsAr.length);
         self.progressPerc = 0.0;
 
-        self.movePhotosSingle(self.dstAlbumList.item(dstSelIndex).value, selThumbsAr); */
+        self.moveVideosSingle(self.dstAlbumList.item(dstSelIndex).value, selThumbsAr);
     },
 
     fillSrcAlbumsListBox: function(albums, selfOwn){
         var self = this;
         self.srcAlbumList.selectedIndex = 0;
 
-        //remove old options, skip "not selected" option
-        for(var i = self.srcAlbumList.length-1; i >= 1; --i){
+        //remove old options, skip "not selected" and "All records" options
+        for(var i = self.srcAlbumList.length-1; i >= 2; --i){
             self.srcAlbumList.remove(i);
         }
 
@@ -935,6 +887,10 @@ var AmApi__ = {
         showSpinner();
 
         VkApiWrapper.queryVideoAlbumsList(ownerId).done(function(albums){
+            if(!albums.items){
+                albums.items = [];
+            }
+
             //sort albums by name
             albums.items = albums.items.sort(function(a, b){
                 if(a.title < b.title){
@@ -959,6 +915,41 @@ var AmApi__ = {
             hideSpinner();
             d.reject();
         });
+
+        return d.promise();
+    },
+
+    queryAllVideos: function(ownerId, albumId){
+        var self = this;
+        var d = $.Deferred();
+        var allVideos = [];
+        showSpinner();
+
+        function queryVideosChunk(offset){
+            VkApiWrapper.queryVideosList(ownerId, albumId, offset).done(
+                function(videosList){
+                    if(!videosList.items){
+                        videosList.items = [];
+                    }
+
+                    allVideos = allVideos.concat(videosList.items);
+
+                    if( videosList.items.length && (offset < videosList.count) ){
+                        queryVideosChunk(offset + videosList.items.length);
+                    } else {
+                        hideSpinner();
+                        d.resolve(allVideos);
+                    }
+                }
+            ).fail(
+                function(){
+                    hideSpinner();
+                    d.reject(allVideos);
+                }
+            );
+        }
+
+        queryVideosChunk(0);
 
         return d.promise();
     },
@@ -1011,8 +1002,8 @@ $.extend(AmApiExport, {
         AmApi__.dstAlbumChanged();
     },
 
-    movePhotosClick: function() {
-        AmApi__.movePhotosClick();
+    moveVideosClick: function() {
+        AmApi__.moveVideosClick();
     },
 
     selToggleAll: function() {
