@@ -916,4 +916,9 @@ html>/**/body .highslide-gallery ul img {
 	background-color: white;
 	background-image: url(graphics/loader.white.gif);
 }
-
+.close-simple-white {
+	width: 16px;
+	height: 16px;
+	background: white url(graphics/controlbar-text-buttons.png) 0 -221px;
+	cursor: pointer;
+}

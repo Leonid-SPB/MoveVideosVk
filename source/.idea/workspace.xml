@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2c1e4f54-d27e-4dd9-852a-174e3f493872" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/albumManager.js" afterPath="$PROJECT_DIR$/albumManager.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/albumManager2.html" afterPath="$PROJECT_DIR$/albumManager2.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/highslide.css" afterPath="$PROJECT_DIR$/highslide.css" />
     </list>
     <ignored path="source.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -35,28 +34,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="albumManager.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/albumManager.js">
+      <file leaf-file-name="highslide.css" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/highslide.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="571" column="4" selection-start="18018" selection-end="18018" vertical-scroll-proportion="0.3325359">
-              <folding>
-                <marker date="1377466125277" expanded="false" signature="11639:11658" placeholder="..." />
-                <marker date="1377466125277" expanded="false" signature="11749:11785" placeholder="..." />
-                <marker date="1377466125277" expanded="false" signature="12028:12060" placeholder="..." />
-                <marker date="1377466125277" expanded="false" signature="12677:12693" placeholder="..." />
-                <marker date="1377466125277" expanded="false" signature="12745:12777" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="albumManager2.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/albumManager2.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="47" column="58" selection-start="2835" selection-end="2835" vertical-scroll-proportion="-19.692308">
-              <folding>
-                <element signature="n#style#0;n#span#0;n#h2#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
-              </folding>
+            <state line="924" column="0" selection-start="21361" selection-end="21361" vertical-scroll-proportion="0.9221968">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -85,10 +67,10 @@
         <option value="E:/DOWNLOADS/jquery-ui-1.10.3.custom(1)/jquery-ui-1.10.3.custom/css/redmond/jquery-ui-1.10.3.custom.css" />
         <option value="$PROJECT_DIR$/jquery-ui-1.9.1.custom.css" />
         <option value="$PROJECT_DIR$/albumManager.css" />
-        <option value="$PROJECT_DIR$/highslide.css" />
-        <option value="$PROJECT_DIR$/highslide.config.js" />
         <option value="$PROJECT_DIR$/albumManager2.html" />
         <option value="$PROJECT_DIR$/albumManager.js" />
+        <option value="$PROJECT_DIR$/highslide.config.js" />
+        <option value="$PROJECT_DIR$/highslide.css" />
       </list>
     </option>
   </component>
@@ -247,7 +229,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="10" y="3" width="1900" height="1160" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.102691926" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32901296" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -369,11 +351,11 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding>
-            <marker date="1377466125277" expanded="false" signature="11639:11658" placeholder="..." />
-            <marker date="1377466125277" expanded="false" signature="11749:11785" placeholder="..." />
-            <marker date="1377466125277" expanded="false" signature="12028:12060" placeholder="..." />
-            <marker date="1377466125277" expanded="false" signature="12677:12693" placeholder="..." />
-            <marker date="1377466125277" expanded="false" signature="12745:12777" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -420,13 +402,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/highslide.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="23" selection-start="663" selection-end="663" vertical-scroll-proportion="0.7002288">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/highslide.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="1172" column="39" selection-start="30926" selection-end="30934" vertical-scroll-proportion="0.5846682">
@@ -443,14 +418,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/highslide.config.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="27" selection-start="1151" selection-end="1151" vertical-scroll-proportion="0.7002288">
+        <state line="15" column="66" selection-start="523" selection-end="523" vertical-scroll-proportion="0.29176202">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/albumManager2.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="58" selection-start="2835" selection-end="2835" vertical-scroll-proportion="-19.692308">
+        <state line="47" column="58" selection-start="2835" selection-end="2835" vertical-scroll-proportion="0.61317366">
           <folding>
             <element signature="n#style#0;n#span#0;n#h2#0;n#div#1;n#body#0;n#html#0;n#!!top" expanded="true" />
           </folding>
@@ -461,12 +436,19 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="571" column="4" selection-start="18018" selection-end="18018" vertical-scroll-proportion="0.3325359">
           <folding>
-            <marker date="1377466125277" expanded="false" signature="11639:11658" placeholder="..." />
-            <marker date="1377466125277" expanded="false" signature="11749:11785" placeholder="..." />
-            <marker date="1377466125277" expanded="false" signature="12028:12060" placeholder="..." />
-            <marker date="1377466125277" expanded="false" signature="12677:12693" placeholder="..." />
-            <marker date="1377466125277" expanded="false" signature="12745:12777" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1377466125277" expanded="false" signature="-1:-1" placeholder="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/highslide.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="924" column="0" selection-start="21361" selection-end="21361" vertical-scroll-proportion="0.9221968">
+          <folding />
         </state>
       </provider>
     </entry>
