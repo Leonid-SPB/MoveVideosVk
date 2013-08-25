@@ -34,7 +34,8 @@
 	border-color: white;
 }
 .highslide-wrapper, .highslide-outline {
-	background: white;
+	background: #2779AA;
+    box-shadow: 0px 0px 20px 10px #2779AA
 }
 .glossy-dark {
 	background: #111;

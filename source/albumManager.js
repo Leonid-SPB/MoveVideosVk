@@ -35,6 +35,7 @@ var AmApi = {};
             var options = $.extend(defaults, opts);
             $this.addClass("ThumbsViewer-thumbs_container");
             $this.on("click.ThumbsViewer", ".ThumbsViewer-thumb_block", function(event){methods.onSelClick__.call(this, $this)});
+            $this.on("ondblclick .ThumbsViewer", ".ThumbsViewer-thumb_block", function(event){methods.onDblClick__.call(this, $this)});
             $this.on("click.ThumbsViewer", ".ThumbsViewer_zoom-ico", function(event){methods.onZoomClick__.call(this, event, $this)});
 
             var data = {
@@ -60,7 +61,7 @@ var AmApi = {};
             thumb_li.append(thumb_parent, $("<a class=\"bg\">&nbsp;</a>"));
 
             var zoom_icon = $("<div class=\"ThumbsViewer_zoom-ico\"><img src=\"graphics/Zoom-In-icon.png\" /></div>");
-            zoom_icon.data('ThumbsViewer', {img_src: img.photo_320});
+            zoom_icon.data('ThumbsViewer', {img_src: img.photo_320, img_title: img.title});
             thumb_parent.append(zoom_icon);
 
             var thumb_img = $("<img />");
@@ -279,11 +280,23 @@ var AmApi = {};
             }
         },
 
+        onDblClick__: function(parent){
+            var data   = parent.data('ThumbsViewer');
+            if( data.disableSel ){
+                return;
+            }
+
+            $this = $(this);
+            var idata   = $this.data('ThumbsViewer');
+
+            //open window with video
+        },
+
         onZoomClick__: function(event, parent){
             $this = $(this);
             var data   = $this.data('ThumbsViewer');
             event.stopPropagation();
-            return hs.expand( $("<a></a>", {href: data.img_src}).get(0), { captionText: 'This is the caption text' } );
+            return hs.expand( $("<a></a>", {href: data.img_src, title: data.img_title}).get(0) );
         }
     };
 
