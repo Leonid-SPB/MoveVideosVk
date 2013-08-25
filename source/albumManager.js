@@ -505,6 +505,7 @@ var VkApiWrapper = {
     apiMaxCallsCount  : 3,
     apiMaxCallsPeriod : 1000,
     errorCodeAccessDenied: 204,//VK api error code for "Access denied"
+    errorCodeAccessDenied2: 15,//VK api error code for "Access denied: videos is disabled"
 
     rateLimiter       : null,
 
@@ -541,7 +542,7 @@ var VkApiWrapper = {
         var p = this.callVkApi("video.getAlbums", {owner_id: ownerId, count: 100});
         p.fail(function(error){
             //don't display error message if access denied error
-            if(error.error_code != self.errorCodeAccessDenied){
+            if(+error.error_code != self.errorCodeAccessDenied){
                 self.displayError("Не удалось получить список альбомов видеозаписей! Попробуйте перезагрузить приложение.");
             }
 
@@ -553,7 +554,7 @@ var VkApiWrapper = {
     queryPhotoAlbumsList: function(ownerId) {
         var self = this;
         var p = this.callVkApi("photos.getAlbums", {owner_id: ownerId});
-        p.fail(function(){
+        p.fail(function(error){
             self.displayError("Не удалось получить список фотоальбомов! Попробуйте перезагрузить приложение.");
         });
         return p;
@@ -562,7 +563,7 @@ var VkApiWrapper = {
     queryPhotosList: function(ownerId, albumId) {
         var self = this;
         var p = this.callVkApi("photos.get", {owner_id: ownerId, album_id: albumId});
-        p.fail(function(){
+        p.fail(function(error){
             self.displayError("Не удалось получить список фотографий из выбранного альбома! Попробуйте перезагрузить приложение.");
         });
         return p;
@@ -570,9 +571,14 @@ var VkApiWrapper = {
 
     queryVideosList: function(ownerId, albumId, offset) {
         var self = this;
-        var p = this.callVkApi("video.get", {owner_id: ownerId, album_id: albumId, width: 320, count: 200, offset: offset});
-        p.fail(function(){
-            self.displayError("Не удалось получить список видеозаписей из выбранного альбома! Попробуйте перезагрузить приложение.");
+        var p = this.callVkApi("video.get", {owner_id: ownerId, album_id: albumId, width: 320, /*count: 200,*/ offset: offset});
+        p.fail(function(error){
+            //don't display error message if access denied error
+            if(+error.error_code != self.errorCodeAccessDenied2){
+                self.displayError("Не удалось получить список видеозаписей из выбранного альбома! Попробуйте перезагрузить приложение.");
+            }
+
+            //TODO: add some warning in such case when error is not fatal
         });
         return p;
     },
@@ -580,7 +586,7 @@ var VkApiWrapper = {
     queryGroupsList: function(userId){
         var self = this;
         var p = this.callVkApi("groups.get", {user_id: userId, extended: 1, filter: "moder"});
-        p.fail(function(){
+        p.fail(function(error){
             self.displayError("Не удалось получить список групп пользователя! Попробуйте перезагрузить приложение.");
         });
         return p;
@@ -589,7 +595,7 @@ var VkApiWrapper = {
     movePhoto: function(ownerId, targetAlbumId, photoId){
         var self = this;
         var p = this.callVkApi("photos.move", {owner_id: ownerId, target_album_id: targetAlbumId, photo_id: photoId});
-        p.fail(function(){
+        p.fail(function(error){
             self.displayError("Не удалось переместить фотографию! Попробуйте перезагрузить приложение.");
         });
         return p;
@@ -598,7 +604,7 @@ var VkApiWrapper = {
     moveVideo: function(ownerGrpId, targetAlbumId, videoIds){
         var self = this;
         var p = this.callVkApi("video.moveToAlbum", {group_id: ownerGrpId, album_id: targetAlbumId, video_ids: videoIds});
-        p.fail(function(){
+        p.fail(function(error){
             self.displayError("Не удалось переместить видеозапись! Попробуйте перезагрузить приложение.");
         });
         return p;
@@ -652,12 +658,24 @@ var AmApi__ = {
             return;
         }
 
-        self.queryAllVideos(ownerId, self.srcAlbumList.item(selIndex).value).then(
+        self.queryAllVideos(ownerId, self.srcAlbumList.item(selIndex).value).always(
             function(videosList){
                 self.srcPhotosNumEdit.value = videosList.length;
 
+                //filter out videos which are in albums for "all videos" option
+                var filteredList = [];
+                if(selIndex == 1){
+                    for(var i = 0; i < videosList.length; ++i){
+                        if(!videosList[i].album_id){
+                            filteredList.push(videosList[i]);
+                        }
+                    }
+                }else{
+                    filteredList = videosList;
+                }
+
                 self.revThumbSortChk.disabled = true;
-                $("#thumbs_container").ThumbsViewer("addThumbList", videosList, self.revThumbSortChk.checked).done(
+                $("#thumbs_container").ThumbsViewer("addThumbList", filteredList, self.revThumbSortChk.checked).done(
                     function(){self.revThumbSortChk.disabled = false;}
                 );
 
@@ -679,7 +697,7 @@ var AmApi__ = {
             return;
         }
 
-        self.queryAllVideos(ownerId, self.dstAlbumList.item(selIndex).value).then(
+        self.queryAllVideos(ownerId, self.dstAlbumList.item(selIndex).value).always(
             function(videosList){
                 self.dstPhotosNumEdit.value = videosList.length;
             }
@@ -703,7 +721,7 @@ var AmApi__ = {
         if(ownerId in self.albumCache){
             doUpdate();
         } else {
-            self.queryAlbumList(ownerId).done(doUpdate);
+            self.queryAlbumList(ownerId).always(doUpdate);
         }
     },
 
@@ -720,7 +738,7 @@ var AmApi__ = {
         if(ownerId in self.albumCache){
             doUpdate()
         } else {
-            self.queryAlbumList(ownerId).done(doUpdate);
+            self.queryAlbumList(ownerId).always(doUpdate);
         }
     },
 
@@ -912,6 +930,7 @@ var AmApi__ = {
             hideSpinner();
             d.resolve();
         }).fail(function(){
+            self.albumCache[ownerId] = [];
             hideSpinner();
             d.reject();
         });
@@ -934,12 +953,13 @@ var AmApi__ = {
 
                     allVideos = allVideos.concat(videosList.items);
 
-                    if( videosList.items.length && (offset < videosList.count) ){
-                        queryVideosChunk(offset + videosList.items.length);
-                    } else {
+//TODO: fix that!!!
+//                    if( videosList.items.length && (offset < videosList.count) ){
+//                        queryVideosChunk(offset + videosList.items.length);
+//                    } else {
                         hideSpinner();
                         d.resolve(allVideos);
-                    }
+//                    }
                 }
             ).fail(
                 function(){
